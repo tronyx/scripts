@@ -4,6 +4,9 @@
 # Script to generate a list of Movies from Radarr that were imported within the last X hours, performs an API call to rename them accordingly, and then rsyncs the new/updated media files to a backup Server
 # This is designed for use with the User Scripts Plugin
 
+# I use Tdarr (https://github.com/HaveAGitGat/Tdarr) to process all of my media to remove unwanted audio tracks, subtitles, and to ensure that a stereo audio track exists. I also include the audio information in the filename for my media so, after Tdarr does its thing, that changes. That change is NOT picked up by Radarr automatically and you would need to manually refresh & scan and then rename the corresponding media files.
+# This script takes care of that for you and then backs everything up to a backup server via rsync.
+
 # Declare some variables
 # This is the actual directory name that the media for this library is stored in, IE: "/mnt/user/data/media/Videos/HD Movies"
 # You will need to check your Unraid share and directory structure to find the correct path for your setup
