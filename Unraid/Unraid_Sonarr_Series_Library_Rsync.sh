@@ -4,20 +4,24 @@
 # Script to generate a list of Series from Sonarr that had episodes imported within the last X hours, performs an API call to rename the episodes accordingly, and then rsyncs the new/updated media files to a backup Server
 
 # Declare some variables
-libraryName='TV Shows' # This is the actual directory name that the media for this library is stored in
+# This is the actual directory name that the media for this library is stored in, IE: "/mnt/user/data/media/Videos/TV Shows"
+libraryName='TV Shows'
 sonarrURL='http://192.168.1.3:9898/sonarr/'
 sonarrAPIKey='YOUR-API-KEY'
 seriesIDList=$(mktemp)
-logFile='/var/log/rsync/tv_shows.log' # The /var/log/directory doesn't exist and will be DELETED every reboot so you will want to use this script too: 
+# The /var/log/directory doesn't exist and will be DELETED every reboot so you will want to use this script too: https://github.com/tronyx/scripts/blob/main/Unraid/Create_Rsync_Logs_Dir.sh
+# Use the User Scripts plugin and set it to run when the Array starts.
+logFile='/var/log/rsync/tv_shows.log'
 curlGETHeaders=( "accept: application/json" "X-Api-Key: ${sonarrAPIKey}" )
 curlPOSTHeaders=( "${curlGETHeaders[@]}" "Content-Type: application/json" )
 
 # Function to check that the source server NFS share is mounted and functional
+# You will need to adjust the remote share mount path accordingly
 check_nfs_share() {
     sourceDataShareTouchStatus=$(timeout 15 touch "/mnt/remotes/192.168.1.3_data/media/test" > /dev/null 2>&1 ; echo $?)
     sourceDataShareLsStatus=$(timeout 15 ls -la "/mnt/remotes/192.168.1.3_data/media/test" > /dev/null 2>&1 ; echo $?)
     if [[ ${sourceDataShareTouchStatus} != '0' ]] || [[ ${sourceDataShareLsStatus} != '0' ]]; then
-        /usr/local/emhttp/plugins/dynamix/scripts/notify -i "alert" -s "Morgoth Data Share Mount Error!" -d "The remote mount of the Morgoth Data Share is broken!"
+        /usr/local/emhttp/plugins/dynamix/scripts/notify -i "alert" -s "Source Server Data Share Mount Error!" -d "The remote mount of the Source Server Data Share is broken!"
         exit 1
     elif [[ ${sourceDataShareTouchStatus} == '0' ]] || [[ ${sourceDataShareLsStatus} == '0' ]]; then
         :
@@ -32,9 +36,9 @@ send_start_notification() {
 }
 
 # Function to get a list of Series that had episodes imported in the last 72 hours
+# You can obviously change the 72 hours to whatever suits your needs best
 get_series_list() {
     curl -s -X GET "${sonarrURL}api/v3/history/since?date=$(date -d '72 hours ago' "+%Y-%m-%dT%H:%MZ")&includeSeries=true&includeEpisode=false" "${curlGETHeaders[@]/#/-H}" | jq .[].series.id | sort | uniq > "${seriesIDList}"
-    #curl -s -X GET "${sonarrURL}api/v3/history/since?date=$(date -d '700 hours ago' "+%Y-%m-%dT%H:%MZ")&includeSeries=true&includeEpisode=false" "${curlGETHeaders[@]/#/-H}" | jq .[].series.id | sort | uniq > "${seriesIDList}"
 }
 
 # Function to loop through list of Series and kick off a 'Refresh & Scan' on each, getting the ID of the command used to ensure it completes before moving to the next one
@@ -83,12 +87,13 @@ rename_episodes() {
 }
 
 # Function to rsync the library to from the source server to the backup server and store the exit code of the process
+# You obviously need to make sure that the source and destination paths are correct for your setup. I will NOT be held accountable for any data loss that may happen if something goes wrong.
 perform_rsync() {
     rsync -sahvP --del --stats "/mnt/remotes/192.168.1.3_data/media/Videos/${libraryName}/" "/mnt/user/Plex_Media_Backup/Videos/${libraryName}/" > "${logFile}" 2>&1
     rsyncExitCode="$?"
 }
 
-# Function to cleanup temp files
+# Function to cleanup temp files for the script
 cleanup() {
     rm -f /tmp/*_episodeFileIDsList /tmp/tmp.* /tmp/seriesIDList.txt
 }
