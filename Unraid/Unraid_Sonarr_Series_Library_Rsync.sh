@@ -2,6 +2,7 @@
 
 # Unraid Sonarr TV Shows backup script
 # Script to generate a list of Series from Sonarr that had episodes imported within the last X hours, performs an API call to rename the episodes accordingly, and then rsyncs the new/updated media files to a backup Server
+# This is designed for use with the User Scripts Plugin
 
 # Declare some variables
 # This is the actual directory name that the media for this library is stored in, IE: "/mnt/user/data/media/Videos/TV Shows"
