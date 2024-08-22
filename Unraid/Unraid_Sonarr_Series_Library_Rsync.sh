@@ -10,6 +10,7 @@
 
 # Declare some variables
 # This is the actual directory name that the media for this library is stored in, IE: "/mnt/user/data/media/Videos/TV Shows"
+# You will need to check your Unraid share and directory structure to find the correct path for your setup
 libraryName='TV Shows'
 sonarrURL='http://192.168.1.3:9898/sonarr/'
 sonarrAPIKey='YOUR-API-KEY'
