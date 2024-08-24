@@ -18,7 +18,7 @@ Various Bash scripts to work with Docker containers.
 
 #### Usage
 
-![Script Usage](/Images/usage.png)
+![Script Usage](/Docker/Images/usage.png)
 
 I utilize the CloudFlare maintenance page setup from [gilbN](https://github.com/gilbN) that is outlined [HERE](https://technicalramblings.com/blog/how-to-setup-a-cloudflare-worker-to-show-a-maintenance-page-when-ca-backup-plugin-is-running/). If you do not use this you will want to comment out the following lines of the script:
 
